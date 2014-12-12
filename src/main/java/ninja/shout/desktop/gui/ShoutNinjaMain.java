@@ -3,18 +3,30 @@ package ninja.shout.desktop.gui;
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
 
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
 import javax.swing.JTextField;
-import javax.swing.JButton;
-import javax.swing.JSplitPane;
+import javax.swing.border.EmptyBorder;
+
+import com.firebase.client.DataSnapshot;
+import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
+import com.firebase.client.ValueEventListener;
+
+import javax.swing.JLabel;
+
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 public class ShoutNinjaMain extends JFrame {
-
+	private static final long serialVersionUID = 3142368401514367216L;
+	
 	private JPanel contentPane;
 	private JTextField txtChatbox;
 	private JTextField txtUsernamebox;
+	
+	private final Firebase ref;
 
 	/**
 	 * Launch the application.
@@ -57,7 +69,19 @@ public class ShoutNinjaMain extends JFrame {
 		panel.add(txtChatbox);
 		txtChatbox.setColumns(10);
 		
+		final JPanel panel_3 = new JPanel();
+		contentPane.add(panel_3, BorderLayout.NORTH);
+		
+		JLabel lblTest = new JLabel("Test");
+		panel_3.add(lblTest);
+		
 		JButton btnSend = new JButton("Send");
+		btnSend.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				panel_3.add(new JLabel("What up, dawg?"));
+				panel_3.revalidate();
+			}
+		});
 		panel.add(btnSend, BorderLayout.EAST);
 		
 		JPanel panel_2 = new JPanel();
@@ -68,6 +92,32 @@ public class ShoutNinjaMain extends JFrame {
 		txtUsernamebox.setText("Guest");
 		panel_2.add(txtUsernamebox);
 		txtUsernamebox.setColumns(10);
+
+		
+		//Load data
+		ref = new Firebase("https://eakjb-shout-ninja2.firebaseio.com/chats");
+		
+		ref.addValueEventListener(new ValueEventListener() {
+		    public void onDataChange(DataSnapshot snapshot) {
+		        System.out.println(snapshot.getValue());
+		        for (DataSnapshot chat : snapshot.getChildren()) {
+		        	JPanel chatPanel = new JPanel(new BorderLayout());
+		        	chatPanel.add(new JLabel(chat.child("text").toString()),BorderLayout.CENTER);
+		        	panel_3.revalidate();
+		        	chatPanel.add(new JLabel(chat.child("user").child("username").toString()),BorderLayout.EAST);
+		        	panel_3.add(chatPanel);
+		        }
+		    }
+
+		    public void onCancelled(FirebaseError firebaseError) {
+		        System.out.println("The read failed: " + firebaseError.getMessage());
+		    }
+		});
+		
+		
 	}
 
+	public Firebase getRef() {
+		return ref;
+	}
 }

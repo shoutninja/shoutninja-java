@@ -1,6 +1,10 @@
 package ninja.shout.desktop;
 
+import java.awt.BorderLayout;
 import java.util.concurrent.CountDownLatch;
+
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
