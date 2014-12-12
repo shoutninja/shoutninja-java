@@ -1,23 +1,29 @@
 package ninja.shout.desktop.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.HashMap;
+import java.util.Map;
 
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.border.EmptyBorder;
 
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 import com.firebase.client.ValueEventListener;
-
-import javax.swing.JLabel;
-
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
 
 public class ShoutNinjaMain extends JFrame {
 	private static final long serialVersionUID = 3142368401514367216L;
@@ -50,7 +56,7 @@ public class ShoutNinjaMain extends JFrame {
 	public ShoutNinjaMain() {
 		setTitle("Shout.Ninja");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 450, 300);
+		setBounds(100, 100, 451, 303);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		contentPane.setLayout(new BorderLayout(0, 0));
@@ -69,17 +75,10 @@ public class ShoutNinjaMain extends JFrame {
 		panel.add(txtChatbox);
 		txtChatbox.setColumns(10);
 		
-		final JPanel panel_3 = new JPanel();
-		contentPane.add(panel_3, BorderLayout.NORTH);
-		
-		JLabel lblTest = new JLabel("Test");
-		panel_3.add(lblTest);
-		
 		JButton btnSend = new JButton("Send");
 		btnSend.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				panel_3.add(new JLabel("What up, dawg?"));
-				panel_3.revalidate();
+			public void actionPerformed(ActionEvent arg0) {
+				sendChat();
 			}
 		});
 		panel.add(btnSend, BorderLayout.EAST);
@@ -92,7 +91,15 @@ public class ShoutNinjaMain extends JFrame {
 		txtUsernamebox.setText("Guest");
 		panel_2.add(txtUsernamebox);
 		txtUsernamebox.setColumns(10);
-
+		
+		final JPanel panel_3 = new JPanel();
+		
+		JScrollPane scrollPane = new JScrollPane(panel_3);
+		scrollPane.setPreferredSize(new Dimension(400,300));
+		scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+		contentPane.add(scrollPane, BorderLayout.CENTER);
+		
+		panel_3.setLayout(new BoxLayout(panel_3,BoxLayout.Y_AXIS));
 		
 		//Load data
 		ref = new Firebase("https://eakjb-shout-ninja2.firebaseio.com/chats");
@@ -102,11 +109,17 @@ public class ShoutNinjaMain extends JFrame {
 		        System.out.println(snapshot.getValue());
 		        for (DataSnapshot chat : snapshot.getChildren()) {
 		        	JPanel chatPanel = new JPanel(new BorderLayout());
-		        	chatPanel.add(new JLabel(chat.child("text").toString()),BorderLayout.CENTER);
-		        	panel_3.revalidate();
-		        	chatPanel.add(new JLabel(chat.child("user").child("username").toString()),BorderLayout.EAST);
+		        	chatPanel.add(new JLabel("  "+chat.child("text").getValue().toString()),BorderLayout.CENTER);
+		        	
+		        	JPanel userPanel = new JPanel();
+		        	userPanel.setLayout(new BoxLayout(userPanel,BoxLayout.Y_AXIS));
+		        	
+		        	userPanel.add(new JLabel(chat.child("user").child("username").getValue().toString()));
+		        	userPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
+		        	chatPanel.add(userPanel,BorderLayout.WEST);
 		        	panel_3.add(chatPanel);
 		        }
+		        pack();
 		    }
 
 		    public void onCancelled(FirebaseError firebaseError) {
@@ -115,6 +128,18 @@ public class ShoutNinjaMain extends JFrame {
 		});
 		
 		
+	}
+	
+	private void sendChat() {
+		Map<String,Object> user = new HashMap<String,Object>();
+		user.put("username", txtUsernamebox.getText());
+		user.put("image", "/img/anonymous.jpg");
+		
+		Map<String,Object> chat = new HashMap<String,Object>();
+		chat.put("text", txtChatbox.getText());
+		chat.put("user", user);
+		
+		//ref.
 	}
 
 	public Firebase getRef() {
